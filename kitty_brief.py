@@ -3,10 +3,12 @@ import requests
 from datetime import datetime
 import os
 
+# Environment variables for Telegram bot
 BOT_TOKEN = os.getenv("KITTY_BOT_TOKEN")
 CHAT_ID = os.getenv("KITTY_CHAT_ID")
 NEWS_API_KEY = "016b7d7f889e45cbbaa035d8c18f3edd"
 
+# Function to fetch news from NewsAPI
 def get_news():
     categories = {
         "India Politics": "indian politics",
@@ -29,22 +31,25 @@ def get_news():
             "pageSize": 3,
             "apiKey": NEWS_API_KEY
         }
-        res = requests.get(base_url, params=params)
-        articles = res.json().get("articles", [])
-        entries = [f"• {a['title']}" for a in articles]
-        headlines.append(f"🗂️ {cat}:
-" + "
-".join(entries))
+        try:
+            res = requests.get(base_url, params=params, timeout=10)
+            articles = res.json().get("articles", [])
+            entries = [f"• {a['title']}" for a in articles]
+            section = f"🗂️ {cat}:
+" + "\n".join(entries)
+            headlines.append(section)
+        except Exception:
+            headlines.append(f"🗂️ {cat}:
+• Failed to fetch news.")
 
-    return "
+    return "\n\n".join(headlines)
 
-".join(headlines)
-
-# Build the message
+# Compose Kitty's morning message
 today = datetime.now().strftime("%A, %d %B %Y")
 news = get_news()
 
-message = f"""🐾 Good Morning, Ashit!  
+message = f'''
+🐾 Good Morning, Ashit!  
 Here’s your daily Kitty briefing for {today} 🗞️
 
 📰 Top News:
@@ -60,16 +65,17 @@ Here’s your daily Kitty briefing for {today} 🗞️
 🎯 Reflection Prompt: What’s one thing you’re grateful for this week?
 
 Stay awesome 😸
-"""
+'''
 
-# Send message
+# Send message via Telegram
 send_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 response = requests.post(send_url, data={
     "chat_id": CHAT_ID,
     "text": message
 })
 
+# Log result
 if response.status_code == 200:
-    print("✅ Kitty news message sent!")
+    print("✅ Kitty message sent with news!")
 else:
-    print("❌ Failed to send message:", response.text)
+    print("❌ Telegram error:", response.text)
