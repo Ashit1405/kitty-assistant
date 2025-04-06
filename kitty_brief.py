@@ -3,17 +3,53 @@ import requests
 from datetime import datetime
 import os
 
-# Load credentials from environment
 BOT_TOKEN = os.getenv("KITTY_BOT_TOKEN")
 CHAT_ID = os.getenv("KITTY_CHAT_ID")
+NEWS_API_KEY = "016b7d7f889e45cbbaa035d8c18f3edd"
 
-# Construct Kitty's daily message
+def get_news():
+    categories = {
+        "India Politics": "indian politics",
+        "Startup India": "startup india",
+        "Global Tech": "technology AND global",
+        "Indian Stock Market": "nifty sensex stock",
+        "Global Economy": "global economy markets"
+    }
+
+    headlines = []
+    today = datetime.now().strftime("%Y-%m-%d")
+    base_url = "https://newsapi.org/v2/everything"
+
+    for cat, query in categories.items():
+        params = {
+            "q": query,
+            "from": today,
+            "sortBy": "relevancy",
+            "language": "en",
+            "pageSize": 3,
+            "apiKey": NEWS_API_KEY
+        }
+        res = requests.get(base_url, params=params)
+        articles = res.json().get("articles", [])
+        entries = [f"• {a['title']}" for a in articles]
+        headlines.append(f"🗂️ {cat}:
+" + "
+".join(entries))
+
+    return "
+
+".join(headlines)
+
+# Build the message
 today = datetime.now().strftime("%A, %d %B %Y")
+news = get_news()
 
 message = f"""🐾 Good Morning, Ashit!  
 Here’s your daily Kitty briefing for {today} 🗞️
 
-📰 Top News: (Coming Soon)
+📰 Top News:
+{news}
+
 📈 Market Update: (Coming Soon)
 🏏 Sports Highlights: (Coming Soon)
 ☁️ Weather: (Coming Soon)
@@ -26,15 +62,14 @@ Here’s your daily Kitty briefing for {today} 🗞️
 Stay awesome 😸
 """
 
-# Send the message via Telegram
+# Send message
 send_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 response = requests.post(send_url, data={
     "chat_id": CHAT_ID,
     "text": message
 })
 
-# Check response
 if response.status_code == 200:
-    print("✅ Kitty message sent successfully!")
+    print("✅ Kitty news message sent!")
 else:
     print("❌ Failed to send message:", response.text)
