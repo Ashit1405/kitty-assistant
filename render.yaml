@@ -1,0 +1,13 @@
+
+services:
+  - type: cron
+    name: kitty-brief
+    schedule: '29 5 * * *'  # Every day at 5:29 AM UTC (adjust as needed)
+    runtime: python
+    buildCommand: ""
+    startCommand: "python kitty_brief.py"
+    envVars:
+      - key: KITTY_BOT_TOKEN
+        sync: false
+      - key: KITTY_CHAT_ID
+        sync: false
