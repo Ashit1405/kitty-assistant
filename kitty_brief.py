@@ -35,12 +35,10 @@ def get_news():
             res = requests.get(base_url, params=params, timeout=10)
             articles = res.json().get("articles", [])
             entries = [f"• {a['title']}" for a in articles]
-            section = f"🗂️ {cat}:
-" + "\n".join(entries)
+            section = f"🗂️ {cat}:\n" + "\n".join(entries)
             headlines.append(section)
         except Exception:
-            headlines.append(f"🗂️ {cat}:
-• Failed to fetch news.")
+            headlines.append(f"🗂️ {cat}:\n• Failed to fetch news.")
 
     return "\n\n".join(headlines)
 
