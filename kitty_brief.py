@@ -29,22 +29,24 @@ def get_news():
             "pageSize": 3,
             "apiKey": NEWS_API_KEY
         }
-        res = requests.get(base_url, params=params)
-        articles = res.json().get("articles", [])
-        entries = [f"• {a['title']}" for a in articles]
-        headlines.append(f"🗂️ {cat}:
-" + "
-".join(entries))
+        try:
+            res = requests.get(base_url, params=params, timeout=10)
+            articles = res.json().get("articles", [])
+            entries = [f"• {a['title']}" for a in articles]
+            headlines.append(f"🗂️ {cat}:
+" + "\n".join(entries))
+        except Exception as e:
+            headlines.append(f"🗂️ {cat}:
+• Failed to fetch news.")
 
-    return "
-
-".join(headlines)
+    return "\n\n".join(headlines)
 
 # Build the message
 today = datetime.now().strftime("%A, %d %B %Y")
 news = get_news()
 
-message = f"""🐾 Good Morning, Ashit!  
+message = f'''
+🐾 Good Morning, Ashit!  
 Here’s your daily Kitty briefing for {today} 🗞️
 
 📰 Top News:
@@ -60,7 +62,7 @@ Here’s your daily Kitty briefing for {today} 🗞️
 🎯 Reflection Prompt: What’s one thing you’re grateful for this week?
 
 Stay awesome 😸
-"""
+'''
 
 # Send message
 send_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
