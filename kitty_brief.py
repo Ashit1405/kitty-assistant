@@ -1,31 +1,29 @@
 
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
-# Environment variables for Telegram bot
 BOT_TOKEN = os.getenv("KITTY_BOT_TOKEN")
 CHAT_ID = os.getenv("KITTY_CHAT_ID")
 NEWS_API_KEY = "016b7d7f889e45cbbaa035d8c18f3edd"
 
-# Function to fetch news from NewsAPI
 def get_news():
     categories = {
-        "India Politics": "indian politics",
-        "Startup India": "startup india",
-        "Global Tech": "technology AND global",
-        "Indian Stock Market": "nifty sensex stock",
-        "Global Economy": "global economy markets"
+        "India Politics": "narendra modi OR indian government OR indian elections",
+        "Startup India": "indian startup OR unicorns OR funding",
+        "Global Tech": "openai OR google ai OR elon musk OR apple",
+        "Indian Stock Market": "nifty OR sensex OR indian stock market",
+        "Global Economy": "inflation OR interest rates OR global economy"
     }
 
     headlines = []
-    today = datetime.now().strftime("%Y-%m-%d")
+    from_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     base_url = "https://newsapi.org/v2/everything"
 
     for cat, query in categories.items():
         params = {
             "q": query,
-            "from": today,
+            "from": from_date,
             "sortBy": "relevancy",
             "language": "en",
             "pageSize": 3,
@@ -35,10 +33,13 @@ def get_news():
             res = requests.get(base_url, params=params, timeout=10)
             articles = res.json().get("articles", [])
             entries = [f"• {a['title']}" for a in articles]
-            section = f"🗂️ {cat}:\n" + "\n".join(entries)
+            section = f"🗂️ {cat}:
+" + "\n".join(entries) if entries else f"🗂️ {cat}:
+• No news found."
             headlines.append(section)
         except Exception:
-            headlines.append(f"🗂️ {cat}:\n• Failed to fetch news.")
+            headlines.append(f"🗂️ {cat}:
+• Failed to fetch news.")
 
     return "\n\n".join(headlines)
 
